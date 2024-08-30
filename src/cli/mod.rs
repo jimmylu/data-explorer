@@ -1,8 +1,5 @@
-use self::connect::ConnectOpts;
-use self::describe::DescribeOpts;
-use self::head::HeadOpts;
-use self::sql::SqlOpts;
 use clap::Parser;
+use enum_dispatch::enum_dispatch;
 
 mod connect;
 mod describe;
@@ -11,9 +8,18 @@ mod list;
 mod sql;
 
 pub use self::{connect::connect, describe::describe, head::head, list::list, sql::sql};
+pub use self::{
+    connect::{ConnectOpts, DatasetConn},
+    describe::DescribeOpts,
+    head::HeadOpts,
+    list::ListOpts,
+    sql::SqlOpts,
+};
+
 type ReplResult = Result<Option<String>, reedline_repl_rs::Error>;
 
 #[derive(Debug, Parser)]
+#[enum_dispatch(CmdExcutor)]
 pub enum ReplCommand {
     #[command(
         name = "connect",
@@ -22,7 +28,7 @@ pub enum ReplCommand {
     Connect(ConnectOpts),
 
     #[command(name = "list", about = "List all datasets")]
-    List,
+    List(ListOpts),
 
     #[command(name = "describe", about = "Describe a dataset")]
     Describe(DescribeOpts),

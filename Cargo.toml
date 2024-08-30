@@ -9,6 +9,9 @@ edition = "2021"
 anyhow = "1.0.86"
 clap = "4.5.16"
 crossbeam-channel = "0.5.13"
+datafusion = { version = "41.0.0", features = ["serde"] }
 directories = "5.0.1"
+enum_dispatch = "0.3.13"
+oneshot = "0.1.8"
 reedline-repl-rs = { version = "1.2.1", features = ["derive"] }
 tokio = { version = "1.39.3", features = ["rt", "rt-multi-thread"] }

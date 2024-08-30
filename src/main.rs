@@ -1,4 +1,5 @@
 use anyhow::Result;
+
 use data_explorer::{get_callbacks, ReplCommand, ReplContext};
 use reedline_repl_rs::Repl;
 const HISTORY_SIZE: usize = 1024;

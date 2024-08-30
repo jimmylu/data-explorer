@@ -1,8 +1,8 @@
 use clap::{ArgMatches, Parser};
 
-use crate::ReplContext;
+use crate::{CmdExcutor, ReplContext, ReplMsg};
 
-use super::{ReplCommand, ReplResult};
+use super::ReplResult;
 
 #[derive(Debug, Clone)]
 pub enum DatasetConn {
@@ -31,9 +31,10 @@ pub fn connect(args: ArgMatches, ctx: &mut ReplContext) -> ReplResult {
         .get_one::<String>("name")
         .expect("expect name")
         .to_owned();
-    let cmd = ConnectOpts::new(conn, table, name).into();
-    ctx.send(cmd);
-    Ok(None)
+    // let cmd = ConnectOpts::new(conn, table, name).into();
+    let (msg, rx) = ReplMsg::new(ConnectOpts::new(conn, table, name));
+
+    Ok(ctx.send(msg, rx))
 }
 
 impl ConnectOpts {
@@ -42,11 +43,11 @@ impl ConnectOpts {
     }
 }
 
-impl From<ConnectOpts> for ReplCommand {
-    fn from(opts: ConnectOpts) -> Self {
-        ReplCommand::Connect(opts)
-    }
-}
+// impl From<ConnectOpts> for ReplCommand {
+//     fn from(opts: ConnectOpts) -> Self {
+//         ReplCommand::Connect(opts)
+//     }
+// }
 fn verify_conn_str(s: &str) -> Result<DatasetConn, String> {
     let conn_str = s.to_string();
     if conn_str.starts_with("Postgres://") {
@@ -59,5 +60,12 @@ fn verify_conn_str(s: &str) -> Result<DatasetConn, String> {
         Ok(DatasetConn::Json(conn_str))
     } else {
         Err(format!("Invalid connection string: {}", s))
+    }
+}
+
+impl CmdExcutor for ConnectOpts {
+    async fn execute<T: crate::Backend>(self, backend: &mut T) -> anyhow::Result<String> {
+        backend.connect(&self).await?;
+        Ok(format!("Connected to {}", self.name))
     }
 }
